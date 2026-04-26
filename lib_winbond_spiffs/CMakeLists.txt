@@ -8,8 +8,10 @@ target_sources(lib_winbond_spiffs INTERFACE
     spiffs_hydrogen.c
     spiffs_gc.c
 
+    spiffs_flash.c
     spiffs_newlib.c
     spiffs_extras.c
+    spiffs_pico_flash.c
     
 )
 
@@ -23,7 +25,7 @@ target_include_directories(lib_winbond_spiffs PRIVATE
 
 )
 
-target_link_libraries(${CMAKE_PROJECT_NAME}
+target_link_libraries(lib_winbond_spiffs INTERFACE
 
     pico_stdlib
     pico_status_led
