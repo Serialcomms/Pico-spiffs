@@ -4,6 +4,8 @@
 #include "pico/flash.h"
 #include "hardware/flash.h"
 
+#include "hardware/xip_cache.h"
+
 #include <spiffs.h>
 #include <spiffs_pico.h>
 #include <spiffs_extras.h>
@@ -59,6 +61,8 @@ static s32_t RAM_ONLY_FUNCTION(pico_spiffs_write_part_page)(u32_t addr, u32_t si
   __builtin_memcpy(reflash_buffer, src, size);
 
   flash_range_program(full_page_address, page_reflash_buffer, ONBOARD_FLASH_PAGE_SIZE);
+
+  xip_cache_invalidate_range(full_page_address, ONBOARD_FLASH_PAGE_SIZE);
   
 }
 
@@ -82,9 +86,9 @@ static s32_t RAM_ONLY_FUNCTION(pico_spiffs_write)(u32_t addr, u32_t size, u8_t *
 
   #endif
  
-  uint32_t address_page_boundary = addr % ONBOARD_FLASH_PAGE_SIZE;
-
   uint32_t saved_interrupts = save_and_disable_interrupts();
+
+  uint32_t address_page_boundary = addr % ONBOARD_FLASH_PAGE_SIZE;
 
   if (address_page_boundary != 0 || size != ONBOARD_FLASH_PAGE_SIZE) {
 
@@ -94,8 +98,12 @@ static s32_t RAM_ONLY_FUNCTION(pico_spiffs_write)(u32_t addr, u32_t size, u8_t *
 
     flash_range_program(addr, src, size);
 
+    xip_cache_invalidate_range(addr, ONBOARD_FLASH_PAGE_SIZE);
+
   }
 
+ // xip_cache_invalidate_range()
+  
   restore_interrupts(saved_interrupts);
 
   #ifdef PICO_GPIO_SPIFFS_ACTIVITY_LED_WRITE  
@@ -115,11 +123,11 @@ static s32_t RAM_ONLY_FUNCTION(pico_spiffs_erase)(u32_t addr, u32_t size) {
 
   #endif
   
-  uint32_t flash_address = (addr);
-
   uint32_t saved_interrupts = save_and_disable_interrupts();
 
   flash_range_erase(addr, size);
+
+  xip_cache_invalidate_range(addr, size);
 
   restore_interrupts(saved_interrupts);
 
@@ -229,7 +237,7 @@ void test_posix() {
 
   fclose(posix_file);
 
-  printf(" SPIFFS Readback Buffer = %s\n", read_buffer);
+  printf("  SPIFFS Readback Buffer = %s\n", read_buffer);
 
 }
 
