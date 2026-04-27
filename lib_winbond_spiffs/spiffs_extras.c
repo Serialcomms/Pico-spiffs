@@ -162,8 +162,8 @@ void spiffs_list_directory() {
       printf("  SPIFFS Filesystem mounted, no directory entries  \n");
       printf("---------------------------------------------------\n");
   
-      printf("  SPIFFS used  bytes = %-10s \n", buffer_bytes_used);
-      printf("  SPIFFS total bytes = %-10s \n", buffer_bytes_total);
+      printf("  SPIFFS used  bytes = %10s \n", buffer_bytes_used);
+      printf("  SPIFFS total bytes = %10s \n", buffer_bytes_total);
      
     } else {
 
