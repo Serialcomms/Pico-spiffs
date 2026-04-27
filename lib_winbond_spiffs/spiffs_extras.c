@@ -198,7 +198,7 @@ void spiffs_list_entries() {
 
     const char *entry_type = get_spiffs_entry_type_from_id(pe->type);
 
-    //       <   6  > < 10 > < 11 > < 11 > // set width to column size above - 2
+//           <   6  > < 10 > < 11 > < 11 >      // set width to column size above - 2
     printf("║ [%04x] │ %10s │ %11s │ %11s ║ \n", 
 
     pe->obj_id, 
@@ -227,8 +227,8 @@ void spiffs_list_entries() {
 
   //printf(" SPIFFS total bytes=%s used bytes=%s\n", printf_bytes_total, printf_bytes_used);
 
-  printf("  SPIFFS used  bytes = %-10s \n", printf_bytes_used);
-  printf("  SPIFFS total bytes = %-10s \n", printf_bytes_total);
+  printf("  SPIFFS used  bytes = %10s \n", printf_bytes_used);
+  printf("  SPIFFS total bytes = %10s \n", printf_bytes_total);
 
   printf("\n\r");
 
