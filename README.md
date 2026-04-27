@@ -6,7 +6,10 @@ removed than added.
 
 All SPIFFS functionality has been moved into a library, and various small extras have been added to it.
 
-Testing is still in progress, but appears to be performing well in a retro computing emulator environment.
+Initial requirement is to run SPIFFS on the Pico's onboard flash, a second phase will add support for external Winbond flash
+using the Pico's SPI interface and SDK support for it.
+
+Testing is still in progress, but all appears to be performing well in a retro computing emulator environment.
 
 
 
