@@ -8,10 +8,9 @@ target_sources(lib_winbond_spiffs INTERFACE
     spiffs_hydrogen.c
     spiffs_gc.c
 
-    spiffs_flash.c
     spiffs_newlib.c
     spiffs_extras.c
-    spiffs_pico_flash.c
+    spiffs_pico.c
     
 )
 

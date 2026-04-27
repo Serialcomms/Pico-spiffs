@@ -2,7 +2,7 @@
 #include "spiffs.h"
 #include "spiffs_extras.h"
 
-extern spiffs fs;
+extern spiffs pico_fs;
 
 static const spiffs_error_codes_t SPIFFS_ERROR_CODE_DECODER[] = {
 
@@ -91,15 +91,15 @@ const uint spiffs_max_entry = count_of(SPIFFS_ENTRY_TYPE_DECODER) - 1;
 
 const char *get_spiffs_entry_type_from_id(uint spiffs_entry_id) {
 
-    if (spiffs_entry_id < 5) {
+  if (spiffs_entry_id < 5) {
 
-        return entry_lookup[spiffs_entry_id].SPIFFS_ERROR_TEXT;
+    return entry_lookup[spiffs_entry_id].SPIFFS_ERROR_TEXT;
 
-    } else {
+  } else {
 
-        return entry_lookup[spiffs_max_entry].SPIFFS_ERROR_TEXT;
+    return entry_lookup[spiffs_max_entry].SPIFFS_ERROR_TEXT;
 
-    }
+  }
 
 }
 
@@ -151,19 +151,20 @@ void spiffs_list_directory() {
     char buffer_bytes_total[14];
     char buffer_bytes_used[14];
 
-    int32_t filesystem_info = SPIFFS_info(&fs, &bytes_total, &bytes_used);
+    int32_t filesystem_info = SPIFFS_info(&pico_fs, &bytes_total, &bytes_used);
 
     spiffs_snprintf_uint_commas(bytes_total, buffer_bytes_total);
     spiffs_snprintf_uint_commas(bytes_used, buffer_bytes_used);
 
     if (bytes_used == 0) {
 
-        printf("---------------------------------------------------\n");
-        printf("  SPIFFS Filesystem mounted, no directory entries  \n");
-        printf("---------------------------------------------------\n");
-
-        printf("SPIFFS total bytes=%s, used bytes=%s\n", buffer_bytes_total,  buffer_bytes_used);
-
+      printf("---------------------------------------------------\n");
+      printf("  SPIFFS Filesystem mounted, no directory entries  \n");
+      printf("---------------------------------------------------\n");
+  
+      printf("  SPIFFS used  bytes = %-10s \n", buffer_bytes_used);
+      printf("  SPIFFS total bytes = %-10s \n", buffer_bytes_total);
+     
     } else {
 
         spiffs_list_entries();
@@ -178,11 +179,11 @@ void spiffs_list_entries() {
 
   int column_width = 8;
 
-  SPIFFS_opendir(&fs, "/", &d);
+  SPIFFS_opendir(&pico_fs, "/", &d);
 
   printf("\n");
 
-  //       <   8  > <    12    > <     13    > <    13      >
+//         <   8  > <    12    > <     13    > <     13    >
   printf("╔════════╤════════════╤═════════════╤═════════════╗\n");
   printf("║ Obj ID │ Entry Type │  File Name  │  File Size  ║\n");  
 //printf("║12345678│123456789ABC│123456789ABCD│123456789ABCD║\n");                                    
@@ -219,12 +220,15 @@ void spiffs_list_entries() {
   char printf_bytes_total[14];
   char printf_bytes_used[14];
 
-  int32_t filesystem_info = SPIFFS_info(&fs, &bytes_total, &bytes_used);
+  int32_t filesystem_info = SPIFFS_info(&pico_fs, &bytes_total, &bytes_used);
 
   spiffs_snprintf_uint_commas(bytes_total, printf_bytes_total);
   spiffs_snprintf_uint_commas(bytes_used, printf_bytes_used);
 
-  printf(" SPIFFS total bytes=%s used bytes=%s\n", printf_bytes_total, printf_bytes_used);
+  //printf(" SPIFFS total bytes=%s used bytes=%s\n", printf_bytes_total, printf_bytes_used);
+
+  printf("  SPIFFS used  bytes = %-10s \n", printf_bytes_used);
+  printf("  SPIFFS total bytes = %-10s \n", printf_bytes_total);
 
   printf("\n\r");
 
