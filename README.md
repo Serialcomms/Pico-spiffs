@@ -1,7 +1,7 @@
 # SPIFFS (SPI Flash File System) 
 This is a repackaged version of SPIFFS which is targetted at the Raspberry Pico SDK 'C' programming ecosystem.
 
-Please note that is not in any way a full or even partial SPIFFS re-write, and that far more source code has been 
+Please note that is not in any way a full or even partial SPIFFS re-write, and that far more source and testing code has been 
 removed than added. 
 
 All SPIFFS functionality has been moved into a library, and various small extras have been added to it.
