@@ -6,6 +6,8 @@ removed than added.
 
 All SPIFFS functionality has been moved into a library, and various small extras have been added to it.
 
+A work-around has been provided for a Pico SDK restriction which blocks flash page writes of < 256 bytes or to non page-aligned addresses.
+
 Initial requirement is to run SPIFFS on the Pico's onboard flash, a second phase will add support for external Winbond flash
 using the Pico's SPI interface and SDK support for it.
 
@@ -13,6 +15,11 @@ Testing is still in progress, but all appears to be performing well in a retro c
 
 Posix-style wrappers now included, allowing regular file operations like fopen, fread etc. to be used directly from
 a Pico C program.
+
+The use of status LEDs connected to Pico GPIO pins is recommended as it provides a simple way of checking SPIFFS activity w.r.t.
+Pico flash Read / Write / Erase operations.
+
+
 
 
 
