@@ -101,8 +101,6 @@ static s32_t RAM_ONLY_FUNCTION(pico_spiffs_write)(u32_t addr, u32_t size, u8_t *
     xip_cache_invalidate_range(addr, ONBOARD_FLASH_PAGE_SIZE);
 
   }
-
- // xip_cache_invalidate_range()
   
   restore_interrupts(saved_interrupts);
 
@@ -189,6 +187,8 @@ void pico_spiffs_mount_filesystem() {
 
       spiffs_list_directory();
   }
+
+  
 }
 
 void pico_spiffs_gpio_init_activity_leds() {

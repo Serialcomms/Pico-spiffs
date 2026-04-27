@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include "pico/stdio.h"
+#include "pico/stdio_uart.h"
+#include "pico/status_led.h"
 #include "pico/stdlib.h"
 
+#include <string.h>
 #include <fcntl.h>   // open()
 #include <unistd.h>  // close()
 #include <errno.h>   // errno
@@ -17,6 +20,9 @@ spiffs_flags fopen_flags_to_spiffs_open_flags(int fopen_flags);
 
 int _open(const char *file_name, int oflag, ...) {
 
+    gpio_put(6, 1);
+    gpio_put(7, 1);
+
     spiffs_flags spiffs_open_flags = fopen_flags_to_spiffs_open_flags(oflag);
 
     spiffs_file open_file = SPIFFS_open(&pico_fs, file_name, spiffs_open_flags, 0);
@@ -27,23 +33,59 @@ int _open(const char *file_name, int oflag, ...) {
 
 off_t _lseek(int fd, off_t pos, int whence) {
 
-    return (off_t) SPIFFS_lseek(&pico_fs, fd, pos, whence);
+    gpio_put(8, 1);
+    gpio_put(9, 1);
+
+    s32_t seek_result = SPIFFS_lseek(&pico_fs, fd, pos, whence);
+
+    gpio_put(8, 0);
+    gpio_put(9, 0);
+
+    return (int) seek_result;
+
 }
 
 int _read(int handle, char *buffer, int length) {
 
-    return (int) SPIFFS_read(&pico_fs, handle, buffer, length);
+    gpio_put(10, 1);
+    gpio_put(11, 1);
+
+    s32_t read_result = SPIFFS_read(&pico_fs, handle, buffer, length);
+
+    gpio_put(10, 0);
+    gpio_put(11, 10);
+
+    return (int) read_result;
 }
 
 int _write(int handle, char *buffer, int length) {
 
-    return (int) SPIFFS_write(&pico_fs, handle, buffer, length);
+    gpio_put(12, 1);
+    gpio_put(13, 1);
+
+    s32_t write_result = SPIFFS_write(&pico_fs, handle, buffer, length);
+
+    gpio_put(12, 0);
+    gpio_put(13, 0);
+
+    return (int) write_result;
 
 }
 
 int _close(int fd) {
 
-    return (int) SPIFFS_close(&pico_fs,fd);
+    gpio_put(6, 0);
+    gpio_put(7, 0);
+
+    //gpio_put(14, 1);
+    //gpio_put(15, 1);
+
+    s32_t close_result = SPIFFS_close(&pico_fs,fd);
+
+    //gpio_put(14, 0);
+    //gpio_put(15, 0);
+
+    return (int) close_result;
 
 }
 
@@ -51,7 +93,7 @@ int _fstat(int fd, struct stat *buf) {
 
     static spiffs_stat s;
 
-    int stat_result = SPIFFS_fstat(&pico_fs, fd, &s);
+    int res = SPIFFS_fstat(&pico_fs, fd, &s);
 
     buf->st_size = s.size;
     buf->st_ino = 1234 + s.obj_id;
@@ -59,19 +101,19 @@ int _fstat(int fd, struct stat *buf) {
     buf->st_nlink = 1;
     buf->st_mode = REGULAR_FILE_PERMISSIONS_ALL;
 
-    return stat_result;
+    return res;
 
 }
 
 int _unlink(const char *path) {
 
-    return (int) SPIFFS_remove(&pico_fs, path);
+    return SPIFFS_remove(&pico_fs, path);
   
 }
 
 int _isatty(int fd) {
 
-   // no need to change this for now?
+   // no need to change ?
 
     return fd == STDIO_HANDLE_STDIN || fd == STDIO_HANDLE_STDOUT || fd == STDIO_HANDLE_STDERR;
 }
@@ -108,9 +150,10 @@ spiffs_flags fopen_flags_to_spiffs_open_flags(int fopen_flags) {
 }
 
 
+
+
 /*
 
-// Pico SDK weak functions which are replace by the ones above
 
 // https://github.com/raspberrypi/pico-sdk/blob/master/src/rp2_common/pico_clib_interface/newlib_interface.c
 
