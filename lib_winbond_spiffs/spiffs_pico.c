@@ -144,16 +144,17 @@ void pico_spiffs_mount_filesystem() {
   pico_spiffs_config.hal_write_f = pico_spiffs_write;
   pico_spiffs_config.hal_erase_f = pico_spiffs_erase;
 
-  pico_spiffs_config.phys_size = (1 * 1024 * 1024);
-  pico_spiffs_config.phys_addr = 0x0100000; // start address in onboard Pico flash
+  pico_spiffs_config.phys_size = (4 * 1024 * 1024);
+
+  pico_spiffs_config.phys_addr = 0x0200000;           // start address in onboard Pico flash
 
   pico_spiffs_config.log_page_size = 256;
-  //pico_spiffs_config.log_block_size = (4*1024);
-  pico_spiffs_config.log_block_size = (256 * 256);
 
-  pico_spiffs_config.phys_erase_block = (4*1024);
+  pico_spiffs_config.log_block_size = (256 * 256);    // 65k
 
-  pico_spiffs_config.fh_ix_offset = 99;  // first file handle issued = 100
+  pico_spiffs_config.phys_erase_block = (256 * 256);  // 65k
+
+  pico_spiffs_config.fh_ix_offset = 99;               // first file handle issued = 100
 
   printf("Attempting to mount SPIFFS filesystem ...\n\n");
 
@@ -186,9 +187,8 @@ void pico_spiffs_mount_filesystem() {
       printf(" SPIFFS Mounted, result = %s\n", get_spiffs_error_text_from_value(mount_result));
 
       spiffs_list_directory();
-  }
+    }
 
-  
 }
 
 void pico_spiffs_gpio_init_activity_leds() {

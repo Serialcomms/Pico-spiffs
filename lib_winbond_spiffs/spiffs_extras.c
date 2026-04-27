@@ -32,19 +32,19 @@ static const spiffs_error_codes_t SPIFFS_ERROR_CODE_DECODER[] = {
     [21] = { SPIFFS_ERR_NOT_CONFIGURED,         "Not Configured"            },
     [22] = { SPIFFS_ERR_NOT_A_FS,               "SPIFFS Unformatted"        },
     [23] = { SPIFFS_ERR_MOUNTED,                "Mounted"                   },
-    [24] = { SPIFFS_ERR_ERASE_FAIL,             "Erase File"                },
+    [24] = { SPIFFS_ERR_ERASE_FAIL,             "Erase Fail"                },
     [25] = { SPIFFS_ERR_MAGIC_NOT_POSSIBLE,     "Magic Not Possible"        },
     [26] = { SPIFFS_ERR_NO_DELETED_BLOCKS,      "No deleted blocks"         },
     [27] = { SPIFFS_ERR_FILE_EXISTS,            "File Exists"               },
     [28] = { SPIFFS_ERR_NOT_A_FILE,             "Not a File"                },
     [29] = { SPIFFS_ERR_RO_NOT_IMPL,            "Not Implemented"           },
 
-    [30] = { SPIFFS_ERR_RO_ABORTED_OPERATION,   "Aborted"                   },
+    [30] = { SPIFFS_ERR_RO_ABORTED_OPERATION,   "Aborted Operation"         },
     [31] = { SPIFFS_ERR_PROBE_TOO_FEW_BLOCKS,   "Too Few Blocks"            },
     [32] = { SPIFFS_ERR_PROBE_NOT_A_FS,         "Not a File System"         },
     [33] = { SPIFFS_ERR_NAME_TOO_LONG,          "Name Too Long"             },
     [33] = { SPIFFS_ERR_IX_MAP_UNMAPPED,        "IX Map Unmapped"           },
-    [34] = { SPIFFS_ERR_IX_MAP_MAPPED,          "IX Map mapped"             },
+    [34] = { SPIFFS_ERR_IX_MAP_MAPPED,          "IX Map Mapped"             },
     [35] = { SPIFFS_ERR_IX_MAP_BAD_RANGE,       "IX Map Bad Range"          },
     [36] = { SPIFFS_ERR_SEEK_BOUNDS,            "Seek Bounds"               },
     [37] = { SPIFFS_ERR_INTERNAL,               "Internal"                  },
@@ -67,7 +67,8 @@ const char *get_spiffs_error_text_from_value(int spiffs_error_value) {
     
     while (value_matched == false && ++error_index < spiffs_error_max_entry) {
 
-        value_matched = (spiffs_error_value == error_lookup[error_index].SPIFFS_ERROR_CODE);
+      value_matched = (spiffs_error_value == error_lookup[error_index].SPIFFS_ERROR_CODE);
+    
     }
 
     return error_lookup[error_index].SPIFFS_ERROR_TEXT;
@@ -146,29 +147,31 @@ void spiffs_snprintf_uint_commas(uint unsigned_integer, char printf_result[14U])
 
 void spiffs_list_directory() {
 
-    static u32_t bytes_total, bytes_used;
+  static u32_t bytes_total, bytes_used;
 
-    char buffer_bytes_total[14];
-    char buffer_bytes_used[14];
+  char buffer_bytes_total[14];
+  char buffer_bytes_used[14];
 
-    int32_t filesystem_info = SPIFFS_info(&pico_fs, &bytes_total, &bytes_used);
+  int32_t filesystem_info = SPIFFS_info(&pico_fs, &bytes_total, &bytes_used);
 
-    spiffs_snprintf_uint_commas(bytes_total, buffer_bytes_total);
-    spiffs_snprintf_uint_commas(bytes_used, buffer_bytes_used);
+  spiffs_snprintf_uint_commas(bytes_total, buffer_bytes_total);
+  spiffs_snprintf_uint_commas(bytes_used, buffer_bytes_used);
 
-    if (bytes_used == 0) {
+  if (bytes_used == 0) {
 
-      printf("---------------------------------------------------\n");
-      printf("  SPIFFS Filesystem mounted, no directory entries  \n");
-      printf("---------------------------------------------------\n");
+    printf("---------------------------------------------------\n");
+    printf("  SPIFFS Filesystem mounted, no directory entries  \n");
+    printf("---------------------------------------------------\n");
   
-      printf("  SPIFFS used  bytes = %10s \n", buffer_bytes_used);
-      printf("  SPIFFS total bytes = %10s \n", buffer_bytes_total);
+    printf("  SPIFFS used  bytes = %10s \n", buffer_bytes_used);
+    printf("  SPIFFS total bytes = %10s \n", buffer_bytes_total);
      
-    } else {
+  } else {
 
-        spiffs_list_entries();
-    }
+    spiffs_list_entries();
+    
+  }
+  
 }
 
 void spiffs_list_entries() {
@@ -177,18 +180,16 @@ void spiffs_list_entries() {
   struct spiffs_dirent e;
   struct spiffs_dirent *pe = &e;
 
-  int column_width = 8;
-
   SPIFFS_opendir(&pico_fs, "/", &d);
 
   printf("\n");
 
-//         <   8  > <    12    > <     13    > <     13    >
-  printf("╔════════╤════════════╤═════════════╤═════════════╗\n");
-  printf("║ Obj ID │ Entry Type │  File Name  │  File Size  ║\n");  
-//printf("║12345678│123456789ABC│123456789ABCD│123456789ABCD║\n");                                    
-  printf("╟────────┼────────────┼─────────────┼─────────────╢\n");
-//printf("╚════════╧════════════╧═════════════╧═════════════╝\n" ); // copy to after entries
+//         <   8  > <    12    > <     15      > <     13    >
+  printf("╔════════╤════════════╤═══════════════╤═════════════╗\n");
+  printf("║ Obj ID │ Entry Type │   File Name   │  File Size  ║\n");  
+//printf("║12345678│123456789ABC│123456789ABCDEF│123456789ABCD║\n");                                    
+  printf("╟────────┼────────────┼───────────────┼─────────────╢\n");
+//printf("╚════════╧════════════╧═══════════════╧═════════════╝\n" ); // copy to after entries
 
   char printf_file_size[14];
 
@@ -198,8 +199,8 @@ void spiffs_list_entries() {
 
     const char *entry_type = get_spiffs_entry_type_from_id(pe->type);
 
-//           <   6  > < 10 > < 11 > < 11 >      // set width to column size above - 2
-    printf("║ [%04x] │ %10s │ %11s │ %11s ║ \n", 
+//           <   6  > < 10 > < 13 > < 11 >      // set width to column size above - 2
+    printf("║ [%04x] │ %10s │ %13s │ %11s ║ \n", 
 
     pe->obj_id, 
     entry_type,
@@ -210,7 +211,7 @@ void spiffs_list_entries() {
    
   }
 
-  printf("╚════════╧════════════╧═════════════╧═════════════╝\n");
+  printf("╚════════╧════════════╧═══════════════╧═════════════╝\n");
 
   printf("\n\r");
 
@@ -224,8 +225,6 @@ void spiffs_list_entries() {
 
   spiffs_snprintf_uint_commas(bytes_total, printf_bytes_total);
   spiffs_snprintf_uint_commas(bytes_used, printf_bytes_used);
-
-  //printf(" SPIFFS total bytes=%s used bytes=%s\n", printf_bytes_total, printf_bytes_used);
 
   printf("  SPIFFS used  bytes = %10s \n", printf_bytes_used);
   printf("  SPIFFS total bytes = %10s \n", printf_bytes_total);
