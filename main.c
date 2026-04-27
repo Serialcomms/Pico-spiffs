@@ -9,19 +9,25 @@
 
 #include "spiffs_pico.h"
 
+bool ERASE_FIRST = false;
+
 void reboot_pico();
 
 int main() {
 
     stdio_uart_init();
 
-    //printf("Erasing flash range 0x0100000 ...\n");
+    if (ERASE_FIRST) {
 
-    //flash_range_erase(0x0100000, (1024 * 1024));
+        printf("Erasing flash range 0x0100000 ...\n");
 
-    //printf("Flash range 0x0100000 Erased\n");
+        flash_range_erase(0x0100000, (1024 * 1024));
 
-    //reboot_pico();
+        printf("Flash range 0x0100000 Erased\n");
+
+        reboot_pico();
+
+    }
     
     pico_spiffs_mount_filesystem();
 
