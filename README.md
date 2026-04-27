@@ -11,6 +11,9 @@ using the Pico's SPI interface and SDK support for it.
 
 Testing is still in progress, but all appears to be performing well in a retro computing emulator environment.
 
+Posix-style wrappers now included, allowing regular file operations like fopen, fread etc. to be used directly from
+a Pico C program.
+
 
 
 **V0.3.7**
