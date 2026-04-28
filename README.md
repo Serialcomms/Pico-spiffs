@@ -19,6 +19,8 @@ a Pico C program.
 The use of status LEDs connected to Pico GPIO pins is recommended as it provides a simple way of checking SPIFFS activity w.r.t.
 Pico flash Read / Write / Erase operations.
 
+Please also note that this repo is still a work in progress, and further updates will be made to it. A 'finished' statement will placed here development and testing are complete.
+
 
 
 
