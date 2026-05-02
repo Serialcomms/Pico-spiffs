@@ -41,7 +41,7 @@ add_executable(spiffs_tester_v01
   
     )
 
-add_subdirectory(lib_winbond_spiffs)
+add_subdirectory(lib_pico_spiffs)
 
 pico_set_program_name(spiffs_tester_v01 "spiffs_tester_v01")
 pico_set_program_version(spiffs_tester_v01 "0.1")
@@ -62,7 +62,7 @@ target_link_libraries(spiffs_tester_v01
 # Add the standard include files to the build
 target_include_directories(spiffs_tester_v01 PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/lib_winbond_spiffs
+        ${CMAKE_CURRENT_LIST_DIR}/lib_pico_spiffs
 )
 
 # Add any user requested libraries
@@ -72,12 +72,12 @@ target_link_libraries(spiffs_tester_v01
     pico_bootrom
     pico_unique_id
     pico_status_led
-    lib_winbond_spiffs
+    lib_pico_spiffs
     )
 
 target_compile_definitions(spiffs_tester_v01 PRIVATE
 
-	PICO_EMBED_XIP_SETUP=1
+	#PICO_EMBED_XIP_SETUP=1
 )
 
 pico_add_extra_outputs(spiffs_tester_v01)
