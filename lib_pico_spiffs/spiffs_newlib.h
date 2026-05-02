@@ -29,13 +29,12 @@ typedef struct PICO_OPEN_FILE_PROFILE {
 
 int _isatty(int fd);
 
-int _open(const char *fn, int oflag, ...);
-int _read(int handle, char *buffer, int length);
-int _write(int handle, char *buffer, int length);
+int RAM_ONLY_FUNCTION (_open)(const char *fn, int oflag, ...);
+int RAM_ONLY_FUNCTION (_read)(int handle, char *buffer, int length);
+int RAM_ONLY_FUNCTION (_write)(int handle, char *buffer, int length);
+int RAM_ONLY_FUNCTION (_fstat)(int fd, struct stat *buf);
+int RAM_ONLY_FUNCTION (_unlink)(const char *path);      // = delete
 
-int _fstat(int fd, struct stat *buf);
-int _unlink(const char *path);      // delete
+off_t RAM_ONLY_FUNCTION (_lseek)(int fd, off_t pos, int whence);
 
-off_t _lseek(int fd, off_t pos, int whence);
-
-int _close(int fd);
+int  RAM_ONLY_FUNCTION (_close)(int fd);

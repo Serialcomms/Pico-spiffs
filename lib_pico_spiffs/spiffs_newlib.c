@@ -29,11 +29,15 @@ int RAM_ONLY_FUNCTION (_open)(const char *file_name, int oflag, ...) {
 
     spiffs_file open_file = SPIFFS_open(&pico_fs, file_name, spiffs_open_flags, 0);
 
-    s32_t spiffs_error = SPIFFS_errno(&pico_fs);
+    if (open_file < 0) {
 
-    errno = get_posix_error_number_from_spiffs(spiffs_error);
+        s32_t spiffs_error = SPIFFS_errno(&pico_fs);
 
-    //dma_printf("spiffs _open, handle=%i, spiffs=%i, error=%i\r\n", open_file, spiffs_error, errno);
+        errno = get_posix_error_number_from_spiffs(spiffs_error);
+
+        dma_printf("spiffs _open, handle=%i, spiffs=%i, error=%i\r\n", open_file, spiffs_error, errno);
+
+    }
 
     return (int) open_file;
    
@@ -45,11 +49,16 @@ off_t RAM_ONLY_FUNCTION (_lseek)(int fd, off_t pos, int whence) {
 
     s32_t seek_result = SPIFFS_lseek(&pico_fs, fd, pos, whence);
 
-    s32_t spiffs_error = SPIFFS_errno(&pico_fs);
+    if (seek_result < 0) {
 
-    errno = get_posix_error_number_from_spiffs(spiffs_error);
+        s32_t spiffs_error = SPIFFS_errno(&pico_fs);
 
-    // dma_printf("spiffs _lseek, result=%i, spiffs=%i, error=%i\r\n", seek_result, spiffs_error, errno);
+        errno = get_posix_error_number_from_spiffs(spiffs_error);
+
+        dma_printf("spiffs _lseek, result=%i, spiffs=%i, error=%i\r\n", seek_result, spiffs_error, errno);
+
+    }
+
 
     return (int) seek_result;
 
@@ -61,11 +70,15 @@ int RAM_ONLY_FUNCTION (_read)(int handle, char *buffer, int length) {
 
     s32_t read_result = SPIFFS_read(&pico_fs, handle, buffer, length);
 
-    s32_t spiffs_error = SPIFFS_errno(&pico_fs);
+    if (read_result < 0) {
 
-    errno = get_posix_error_number_from_spiffs(spiffs_error);
+        s32_t spiffs_error = SPIFFS_errno(&pico_fs);
 
-    dma_printf("spiffs _read, result=%i, spiffs=%i, error=%i\r\n", read_result, spiffs_error, errno);
+        errno = get_posix_error_number_from_spiffs(spiffs_error);
+
+        dma_printf("spiffs _read, result=%i, spiffs=%i, error=%i\r\n", read_result, spiffs_error, errno);
+
+    }
 
     return (int) read_result;
 }
@@ -76,11 +89,15 @@ int RAM_ONLY_FUNCTION (_write)(int handle, char *buffer, int length) {
 
     s32_t write_result = SPIFFS_write(&pico_fs, handle, buffer, length);
 
-    s32_t spiffs_error = SPIFFS_errno(&pico_fs);
+    if (write_result < 0) {
 
-    errno = get_posix_error_number_from_spiffs(spiffs_error);
+        s32_t spiffs_error = SPIFFS_errno(&pico_fs);
 
-    dma_printf("spiffs _write, result=%i, spiffs=%i, error=%i\r\n", write_result, spiffs_error, errno);
+        errno = get_posix_error_number_from_spiffs(spiffs_error);
+
+        dma_printf("spiffs _write, result=%i, spiffs=%i, error=%i\r\n", write_result, spiffs_error, errno);
+
+    }
 
     return (int) write_result;
 
@@ -92,11 +109,15 @@ int RAM_ONLY_FUNCTION (_close)(int fd) {
 
     s32_t close_result = SPIFFS_close(&pico_fs,fd);
 
-    s32_t spiffs_error = SPIFFS_errno(&pico_fs);
+    if (close_result < 0) {
 
-    errno = get_posix_error_number_from_spiffs(spiffs_error);
+        s32_t spiffs_error = SPIFFS_errno(&pico_fs);
 
-    dma_printf("spiffs _close, result=%i, spiffs=%i, error=%i\r\n", close_result, spiffs_error, errno);
+        errno = get_posix_error_number_from_spiffs(spiffs_error);
+
+        dma_printf("spiffs _close, result=%i, spiffs=%i, error=%i\r\n", close_result, spiffs_error, errno);
+
+    }
 
     return (int) close_result;
 
@@ -108,15 +129,23 @@ int RAM_ONLY_FUNCTION (_fstat)(int fd, struct stat *buf) {
 
     SPIFFS_clearerr(&pico_fs);
     
-    int fstat_result = SPIFFS_fstat(&pico_fs, fd, &s);
+    s32_t fstat_result = SPIFFS_fstat(&pico_fs, fd, &s);
 
-    s32_t spiffs_error = SPIFFS_errno(&pico_fs);
+    if (fstat_result < 0) {
 
-    errno = get_posix_error_number_from_spiffs(spiffs_error);
+        s32_t spiffs_error = SPIFFS_errno(&pico_fs);
 
-    dma_printf("spiffs _fstat, result=%i, spiffs=%i, error=%i\r\n", fstat_result, spiffs_error, errno);
+        errno = get_posix_error_number_from_spiffs(spiffs_error);
 
-    if (spiffs_error == 0) {
+        dma_printf("spiffs _fstat, result=%i, spiffs=%i, error=%i\r\n", fstat_result, spiffs_error, errno);
+
+        buf->st_size = 0;
+        buf->st_ino = 0;
+
+        buf->st_nlink = 0;
+        buf->st_mode = 0;
+
+    }   else {
 
         buf->st_size = s.size;
         buf->st_ino = 1234 + s.obj_id;
@@ -124,13 +153,6 @@ int RAM_ONLY_FUNCTION (_fstat)(int fd, struct stat *buf) {
         buf->st_nlink = 1;
         buf->st_mode = REGULAR_FILE_PERMISSIONS_ALL;
 
-    } else {
-
-        buf->st_size = 0;
-        buf->st_ino = 0;
-
-        buf->st_nlink = 0;
-        buf->st_mode = 0;
 
     }
 
@@ -144,11 +166,15 @@ int RAM_ONLY_FUNCTION (_unlink)(const char *path) {
 
     s32_t remove_result = SPIFFS_remove(&pico_fs, path);
 
-    s32_t spiffs_error = SPIFFS_errno(&pico_fs);
+    if (remove_result < 0) {
 
-    errno = get_posix_error_number_from_spiffs(spiffs_error);
+        s32_t spiffs_error = SPIFFS_errno(&pico_fs);
 
-    dma_printf("spiffs unlink, result=%i, spiffs=%i, error=%i\r\n", remove_result, spiffs_error, errno);
+        errno = get_posix_error_number_from_spiffs(spiffs_error);
+
+        dma_printf("spiffs unlink, result=%i, spiffs=%i, error=%i\r\n", remove_result, spiffs_error, errno);
+
+    }
 
     return remove_result;
   
@@ -157,10 +183,6 @@ int RAM_ONLY_FUNCTION (_unlink)(const char *path) {
 int RAM_ONLY_FUNCTION (_isatty)(int fd) {
 
     SPIFFS_clearerr(&pico_fs);
-
-    s32_t spiffs_error = SPIFFS_errno(&pico_fs);
-
-    errno = get_posix_error_number_from_spiffs(spiffs_error);
 
     return fd == STDIO_HANDLE_STDIN || fd == STDIO_HANDLE_STDOUT || fd == STDIO_HANDLE_STDERR;
 }
