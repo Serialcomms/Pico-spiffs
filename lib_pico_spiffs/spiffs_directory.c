@@ -7,30 +7,30 @@
 
 extern spiffs pico_fs;
 
-static const spiffs_entry_type_t SPIFFS_ENTRY_TYPE_DECODER[] = {
+static const spiffs_object_entry_type_t SPIFFS_OBJECT_ENTRY_TYPE_DECODER[] = {
 
-    [0] = { "Unknown"},
-    [1] = { "File"},
-    [2] = { "Directory"},
-    [3] = { "Hard Link"},
-    [4] = { "Soft Link"},
-    [5] = { "Unknown"},
+  [0] = { "Unknown"},
+  [1] = { "File"},
+  [2] = { "Directory"},
+  [3] = { "Hard Link"},
+  [4] = { "Soft Link"},
+  [5] = { "Unknown"},
 
 };
 
-spiffs_entry_type_t *entry_lookup = SPIFFS_ENTRY_TYPE_DECODER;
+spiffs_object_entry_type_t *entry_lookup = SPIFFS_OBJECT_ENTRY_TYPE_DECODER;
 
-const uint spiffs_max_entry = count_of(SPIFFS_ENTRY_TYPE_DECODER) - 1;
+const uint spiffs_max_entry = count_of(SPIFFS_OBJECT_ENTRY_TYPE_DECODER) - 1;
 
 char *get_spiffs_entry_type_from_id(uint spiffs_entry_id) {
 
   if (spiffs_entry_id < 5) {
 
-    return entry_lookup[spiffs_entry_id].SPIFFS_ERROR_TEXT;
+    return entry_lookup[spiffs_entry_id].OBJECT_ENTRY_TYPE_TEXT;
 
   } else {
 
-    return entry_lookup[spiffs_max_entry].SPIFFS_ERROR_TEXT;
+    return entry_lookup[spiffs_max_entry].OBJECT_ENTRY_TYPE_TEXT;
 
   }
 

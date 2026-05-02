@@ -1,10 +1,10 @@
 
 #define RAM_ONLY_FUNCTION __no_inline_not_in_flash_func
 
-#define PICO_RAM_ONLY_DATA   __attribute__((section(".data")))
+#define PICO_RAM_ONLY_DATA  __attribute__((section(".data")))
 #define PICO_ALIGNED_WORD   __attribute__((aligned(4)))
 
-#define PICO_RAM_ONLY_ALIGNED_DATA  __attribute__((section(".data")))  __attribute__((aligned(4)))
+#define PICO_RAM_ONLY_ALIGNED_DATA  __attribute__((section(".data"))) __attribute__((aligned(4)))
 //  __attribute__((section(".data"))) __attribute__((aligned(4)))
 
 //RAM_DATA uint32_t coefficients[128];

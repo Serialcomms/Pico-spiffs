@@ -13,8 +13,4 @@ typedef const struct SPIFFS_ERROR_CODES_PROFILE {
 
 } spiffs_error_codes_t;
 
-typedef const struct SPIFFS_ENTRY_TYPES_PROFILE {
-    
-    char *SPIFFS_ERROR_TEXT;
 
-} spiffs_entry_type_t;

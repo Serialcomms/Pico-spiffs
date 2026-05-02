@@ -27,23 +27,23 @@ int RAM_ONLY_FUNCTION (_open)(const char *file_name, int oflag, ...) {
 
     spiffs_flags spiffs_open_flags = fopen_flags_to_spiffs_open_flags(oflag);
 
-    spiffs_file open_file = SPIFFS_open(&pico_fs, file_name, spiffs_open_flags, 0);
+    spiffs_file file_handle = SPIFFS_open(&pico_fs, file_name, spiffs_open_flags, 0);
 
-    if (open_file < 0) {
+    if (file_handle < 0) {  // should be a +ve number starting from 100 as per spiffs fh_ix_offset = 99
 
         s32_t spiffs_error = SPIFFS_errno(&pico_fs);
 
         errno = get_posix_error_number_from_spiffs(spiffs_error);
 
-        dma_printf("spiffs _open, handle=%i, spiffs=%i, error=%i\r\n", open_file, spiffs_error, errno);
+        dma_printf("spiffs _open, handle=%i, spiffs=%i, error=%i\r\n", file_handle, spiffs_error, errno);
 
     }
 
-    return (int) open_file;
+    return (int) file_handle;
    
 }
 
-off_t RAM_ONLY_FUNCTION (_lseek)(int fd, off_t pos, int whence) {
+int RAM_ONLY_FUNCTION (_lseek)(int fd, off_t pos, int whence) {
 
     SPIFFS_clearerr(&pico_fs);
 
@@ -58,7 +58,6 @@ off_t RAM_ONLY_FUNCTION (_lseek)(int fd, off_t pos, int whence) {
         dma_printf("spiffs _lseek, result=%i, spiffs=%i, error=%i\r\n", seek_result, spiffs_error, errno);
 
     }
-
 
     return (int) seek_result;
 
@@ -152,11 +151,9 @@ int RAM_ONLY_FUNCTION (_fstat)(int fd, struct stat *buf) {
 
         buf->st_nlink = 1;
         buf->st_mode = REGULAR_FILE_PERMISSIONS_ALL;
-
-
     }
 
-    return fstat_result;
+    return (int) fstat_result;
 
 }
 
@@ -176,15 +173,46 @@ int RAM_ONLY_FUNCTION (_unlink)(const char *path) {
 
     }
 
-    return remove_result;
+    return (int) remove_result;
   
 }
 
 int RAM_ONLY_FUNCTION (_isatty)(int fd) {
 
+    int is_a_terminal = 0;
+    
     SPIFFS_clearerr(&pico_fs);
 
-    return fd == STDIO_HANDLE_STDIN || fd == STDIO_HANDLE_STDOUT || fd == STDIO_HANDLE_STDERR;
+    if (fd < 0) {
+
+        errno = EBADF;
+        return 0;
+
+    } else {
+
+        switch (fd) {
+
+            case STDIO_HANDLE_STDIN:
+            is_a_terminal = 1;
+            break;
+
+            case STDIO_HANDLE_STDOUT:
+            is_a_terminal = 1;
+            break;
+
+            case STDIO_HANDLE_STDERR:
+            is_a_terminal = 1;
+            break;
+
+            default:
+            is_a_terminal = 0;
+            break;
+
+        }
+
+        return is_a_terminal;
+    }
+  
 }
 
 spiffs_flags RAM_ONLY_FUNCTION (fopen_flags_to_spiffs_open_flags)(int fopen_flags) {

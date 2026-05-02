@@ -1,3 +1,10 @@
+
+typedef const struct SPIFFS_OBJECT_ENTRY_TYPES_PROFILE {
+    
+  char *OBJECT_ENTRY_TYPE_TEXT;
+
+} spiffs_object_entry_type_t;
+
 void spiffs_list_directory();
 void spiffs_list_entries();
 
