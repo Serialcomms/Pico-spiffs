@@ -1,6 +1,9 @@
-add_library(lib_winbond_spiffs INTERFACE)
 
-target_sources(lib_winbond_spiffs INTERFACE
+set(PICO_LIBRARY_NAME lib_pico_spiffs)
+
+add_library(${PICO_LIBRARY_NAME} INTERFACE)
+
+target_sources(${PICO_LIBRARY_NAME} INTERFACE
 
     spiffs_cache.c
     spiffs_check.c
@@ -10,27 +13,28 @@ target_sources(lib_winbond_spiffs INTERFACE
 
     spiffs_newlib.c
     spiffs_extras.c
-    spiffs_pico.c
+    spiffs_directory.c
+    
+    #spiffs_pico_onboard.c 
+    spiffs_pico_external.c
     
 )
 
-target_include_directories(lib_winbond_spiffs INTERFACE
+target_include_directories(${PICO_LIBRARY_NAME} INTERFACE
 
     ${CMAKE_CURRENT_SOURCE_DIR}/
 
 )
 
-target_include_directories(lib_winbond_spiffs PRIVATE
-
-)
-
-target_link_libraries(lib_winbond_spiffs INTERFACE
+target_link_libraries(${PICO_LIBRARY_NAME} INTERFACE
 
     pico_stdlib
+    pico_malloc
+    pico_mem_ops
     pico_status_led
  
 )
 
-message("--------------------------------------------------------------")
-message("-- Building pellepl SPIFFS flash library - lib_winbond_spiffs ")
-message("--------------------------------------------------------------")
+message("-------------------------------------------------------------")
+message("--  Building pellepl SPIFFS flash library - ${PICO_LIBRARY_NAME}  ")
+message("-------------------------------------------------------------")

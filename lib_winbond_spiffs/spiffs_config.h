@@ -11,16 +11,6 @@
 #include "pico/stdlib.h"
 #include "pico/printf.h"
 
-typedef int32_t s32_t;
-typedef int16_t s16_t;
-typedef int8_t s8_t;
-
-typedef uint32_t u32_t;
-typedef uint16_t u16_t;
-typedef uint8_t u8_t;
-
-// compile time switches
-
 // Set generic spiffs debug output call.
 #ifndef SPIFFS_DBG
 #define SPIFFS_DBG(_f, ...) //printf(_f, ## __VA_ARGS__)
@@ -86,17 +76,17 @@ typedef uint8_t u8_t;
 // Enables/disable memory read caching of nucleus file system operations.
 // If enabled, memory area must be provided for cache in SPIFFS_mount.
 #ifndef  SPIFFS_CACHE
-#define SPIFFS_CACHE                    1
+#define SPIFFS_CACHE                    0
 #endif
 #if SPIFFS_CACHE
 // Enables memory write caching for file descriptors in hydrogen
 #ifndef  SPIFFS_CACHE_WR
-#define SPIFFS_CACHE_WR                 1
+#define SPIFFS_CACHE_WR                 0
 #endif
 
 // Enable/disable statistics on caching. Debug/test purpose only.
 #ifndef  SPIFFS_CACHE_STATS
-#define SPIFFS_CACHE_STATS              1
+#define SPIFFS_CACHE_STATS              0
 #endif
 #endif
 
@@ -277,7 +267,7 @@ typedef uint8_t u8_t;
 // directly. If all available descriptors become opened, all cache memory is
 // lost.
 #ifndef SPIFFS_TEMPORAL_FD_CACHE
-#define SPIFFS_TEMPORAL_FD_CACHE              1
+#define SPIFFS_TEMPORAL_FD_CACHE              0
 #endif
 
 // Temporal file cache hit score. Each time a file is opened, all cached files
@@ -360,22 +350,22 @@ typedef uint8_t u8_t;
 #ifndef SPIFFS_TYPES_OVERRIDE
 // Block index type. Make sure the size of this type can hold
 // the highest number of all blocks - i.e. spiffs_file_system_size / log_block_size
-//typedef u16_t spiffs_block_ix;
+// typedef u16_t spiffs_block_ix;
 // Use Pico SDK variable types
 typedef uint32_t spiffs_block_ix;
 // Page index type. Make sure the size of this type can hold
 // the highest page number of all pages - i.e. spiffs_file_system_size / log_page_size
-//typedef u16_t spiffs_page_ix;
+// typedef u16_t spiffs_page_ix;
 typedef uint32_t spiffs_page_ix;
 // Object id type - most significant bit is reserved for index flag. Make sure the
 // size of this type can hold the highest object id on a full system,
 // i.e. 2 + (spiffs_file_system_size / (2*log_page_size))*2
-//typedef u16_t spiffs_obj_id;
+// typedef u16_t spiffs_obj_id;
 typedef uint32_t spiffs_obj_id;
 // Object span index type. Make sure the size of this type can
 // hold the largest possible span index on the system -
 // i.e. (spiffs_file_system_size / log_page_size) - 1
-//typedef u16_t spiffs_span_ix;
+// typedef u16_t spiffs_span_ix;
 typedef uint32_t spiffs_span_ix;
 #endif
 

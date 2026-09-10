@@ -1,15 +1,13 @@
 
 #include "pico/stdlib.h"
+#include "string.h"
 #include "spiffs.h"
 #include "spiffs_nucleus.h"
-
-// changed memset to __builtin_memset for Raspberry Pico SDK version
 
 #if !SPIFFS_READ_ONLY
 
 // Erases a logical block and updates the erase counter.
-// If cache is enabled, all pages that might be cached in this block
-// is dropped.
+// If cache is enabled, all pages that might be cached in this block is dropped.
 static s32_t spiffs_gc_erase_block(
     spiffs *fs,
     spiffs_block_ix bix) {
@@ -108,8 +106,8 @@ s32_t spiffs_gc_quick(
   return res;
 }
 
-// Checks if garbage collecting is necessary. If so a candidate block is found,
-// cleansed and erased
+// Checks if garbage collecting is necessary. 
+// If so a candidate block is found, cleansed and erased
 s32_t spiffs_gc_check(
     spiffs *fs,
     u32_t len) {
@@ -252,7 +250,7 @@ s32_t spiffs_gc_find_candidate(
   // using fs->work area as sorted candidate memory, (spiffs_block_ix)cand_bix/(s32_t)score
   int max_candidates = MIN(fs->block_count, (SPIFFS_CFG_LOG_PAGE_SZ(fs)-8)/(sizeof(spiffs_block_ix) + sizeof(s32_t)));
   *candidate_count = 0;
-  __builtin_memset(fs->work, 0xff, SPIFFS_CFG_LOG_PAGE_SZ(fs));
+  memset(fs->work, 0xff, SPIFFS_CFG_LOG_PAGE_SZ(fs));
 
   // divide up work area into block indices and scores
   spiffs_block_ix *cand_blocks = (spiffs_block_ix *)fs->work;
@@ -391,7 +389,7 @@ s32_t spiffs_gc_clean(spiffs *fs, spiffs_block_ix bix) {
 
   SPIFFS_GC_DBG("gc_clean: cleaning block "_SPIPRIbl"\n", bix);
 
-  __builtin_memset(&gc, 0, sizeof(spiffs_gc));
+  memset(&gc, 0, sizeof(spiffs_gc));
   gc.state = FIND_OBJ_DATA;
 
   if (fs->free_cursor_block_ix == bix) {

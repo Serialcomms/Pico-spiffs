@@ -5,11 +5,10 @@
  *      Author: petera
  */
 
-// changed memset to __builtin_memset for Raspberry Pico SDK version
 
 #include "spiffs.h"
 #include "spiffs_nucleus.h"
-#include "pico/malloc.h"
+#include "string.h"
 
 #if SPIFFS_CACHE
 
@@ -301,7 +300,7 @@ void spiffs_cache_init(spiffs *fs) {
   }
 
   spiffs_cache cache;
-  __builtin_memset(&cache, 0, sizeof(spiffs_cache));
+  memset(&cache, 0, sizeof(spiffs_cache));
 
   cache.cpage_count = cache_entries;
   cache.cpages = (u8_t *)((u8_t *)fs->cache + sizeof(spiffs_cache));
@@ -312,7 +311,7 @@ void spiffs_cache_init(spiffs *fs) {
 
   spiffs_cache *c = spiffs_get_cache(fs);
 
-  __builtin_memset(c->cpages, 0, c->cpage_count * SPIFFS_CACHE_PAGE_SIZE(fs));
+  memset(c->cpages, 0, c->cpage_count * SPIFFS_CACHE_PAGE_SIZE(fs));
 
   c->cpage_use_map &= ~(c->cpage_use_mask);
   for (i = 0; i < cache.cpage_count; i++) {

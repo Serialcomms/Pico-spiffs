@@ -1,12 +1,7 @@
 #include "spiffs.h"
 #include "spiffs_nucleus.h"
-#include "pico/stdlib.h"
-//#include "pico/memops.h"
 
-// changed memset to __builtin_memset for Raspberry Pico SDK version
-// changed strcmp to __builtin_strcmp for Raspberry Pico SDK version
-// changed strlnen to __builtin_strlen for Raspberry Pico SDK version
-// changed strncpy to __builtin_strncpy for Raspberry Pico SDK version
+#include "string.h"
 
 static s32_t spiffs_page_data_check(spiffs *fs, spiffs_fd *fd, spiffs_page_ix pix, spiffs_span_ix spix) {
   s32_t res = SPIFFS_OK;
@@ -961,7 +956,7 @@ s32_t spiffs_object_create(
   oix_hdr.p_hdr.flags = 0xff & ~(SPIFFS_PH_FLAG_FINAL | SPIFFS_PH_FLAG_INDEX | SPIFFS_PH_FLAG_USED);
   oix_hdr.type = type;
   oix_hdr.size = SPIFFS_UNDEFINED_LEN; // keep ones so we can update later without wasting this page
-  __builtin_strncpy((char*)oix_hdr.name, (const char*)name, sizeof(oix_hdr.name) - 1);
+  strncpy((char*)oix_hdr.name, (const char*)name, sizeof(oix_hdr.name) - 1);
   ((char*)oix_hdr.name)[sizeof(oix_hdr.name) - 1] = '\0';
 #if SPIFFS_OBJ_META_LEN
   if (meta) {
@@ -1025,7 +1020,7 @@ s32_t spiffs_object_update_index_hdr(
 
   // change name
   if (name) {
-    __builtin_strncpy((char*)objix_hdr->name, (const char*)name, sizeof(objix_hdr->name) - 1);
+    strncpy((char*)objix_hdr->name, (const char*)name, sizeof(objix_hdr->name) - 1);
     ((char*) objix_hdr->name)[sizeof(objix_hdr->name) - 1] = '\0';
   }
 #if SPIFFS_OBJ_META_LEN
@@ -1330,7 +1325,7 @@ s32_t spiffs_object_append(spiffs_fd *fd, u32_t offset, u8_t *data, u32_t len) {
               &p_hdr, 0, 0, 0, 1, &cur_objix_pix);
           SPIFFS_CHECK_RES(res);
           // quick "load" of new object index page
-          __builtin_memset(fs->work, 0xff, SPIFFS_CFG_LOG_PAGE_SZ(fs));
+          memset(fs->work, 0xff, SPIFFS_CFG_LOG_PAGE_SZ(fs));
           _SPIFFS_MEMCPY(fs->work, &p_hdr, sizeof(spiffs_page_header));
           spiffs_cb_object_event(fs, (spiffs_page_object_ix *)fs->work,
               SPIFFS_EV_IX_NEW, fd->obj_id, cur_objix_spix, cur_objix_pix, 0);
@@ -1578,6 +1573,7 @@ s32_t spiffs_object_modify(spiffs_fd *fd, u32_t offset, u8_t *data, u32_t len) {
       // a full page, allocate and write a new page of data
       res = spiffs_page_allocate_data(fs, fd->obj_id & ~SPIFFS_OBJ_ID_IX_FLAG,
           &p_hdr, &data[written], to_write, page_offs, 1, &data_pix);
+      if (res != SPIFFS_OK) break;
       SPIFFS_DBG("modify: store new data page, "_SPIPRIpg":"_SPIPRIsp" offset:"_SPIPRIi", len "_SPIPRIi", written "_SPIPRIi"\n", data_pix, data_spix, page_offs, to_write, written);
     } else {
       // write to existing page, allocate new and copy unmodified data
@@ -1698,7 +1694,7 @@ static s32_t spiffs_object_find_object_index_header_by_name_v(
   if (objix_hdr.p_hdr.span_ix == 0 &&
       (objix_hdr.p_hdr.flags & (SPIFFS_PH_FLAG_DELET | SPIFFS_PH_FLAG_FINAL | SPIFFS_PH_FLAG_IXDELE)) ==
           (SPIFFS_PH_FLAG_DELET | SPIFFS_PH_FLAG_IXDELE)) {
-    if (__builtin_strcmp((const char*)user_const_p, (char*)objix_hdr.name) == 0) {
+    if (strcmp((const char*)user_const_p, (char*)objix_hdr.name) == 0) {
       return SPIFFS_OK;
     }
   }
@@ -1942,7 +1938,7 @@ s32_t spiffs_object_truncate(
       } else {
         // make uninitialized object
         SPIFFS_DBG("truncate: reset objix_hdr page "_SPIPRIpg"\n", objix_pix);
-        __builtin_memset(fs->work + sizeof(spiffs_page_object_ix_header), 0xff,
+        memset(fs->work + sizeof(spiffs_page_object_ix_header), 0xff,
             SPIFFS_CFG_LOG_PAGE_SZ(fs) - sizeof(spiffs_page_object_ix_header));
         res = spiffs_object_update_index_hdr(fs, fd, fd->obj_id,
             objix_pix, fs->work, 0, 0, SPIFFS_UNDEFINED_LEN, &new_objix_hdr_pix);
@@ -2099,7 +2095,7 @@ static s32_t spiffs_obj_lu_find_free_obj_id_bitmap_v(spiffs *fs, spiffs_obj_id i
       if (objix_hdr.p_hdr.span_ix == 0 &&
           (objix_hdr.p_hdr.flags & (SPIFFS_PH_FLAG_DELET | SPIFFS_PH_FLAG_FINAL | SPIFFS_PH_FLAG_IXDELE)) ==
               (SPIFFS_PH_FLAG_DELET | SPIFFS_PH_FLAG_IXDELE)) {
-        if (__builtin_strcmp((const char*)user_const_p, (char*)objix_hdr.name) == 0) {
+        if (strcmp((const char*)user_const_p, (char*)objix_hdr.name) == 0) {
           return SPIFFS_ERR_CONFLICTING_NAME;
         }
       }
@@ -2129,7 +2125,7 @@ static s32_t spiffs_obj_lu_find_free_obj_id_compact_v(spiffs *fs, spiffs_obj_id 
         ((objix_hdr.p_hdr.flags & (SPIFFS_PH_FLAG_INDEX | SPIFFS_PH_FLAG_FINAL | SPIFFS_PH_FLAG_DELET)) ==
             (SPIFFS_PH_FLAG_DELET))) {
       // ok object look up entry
-      if (state->conflicting_name && __builtin_strcmp((const char *)state->conflicting_name, (char *)objix_hdr.name) == 0) {
+      if (state->conflicting_name && strcmp((const char *)state->conflicting_name, (char *)objix_hdr.name) == 0) {
         return SPIFFS_ERR_CONFLICTING_NAME;
       }
 
@@ -2167,7 +2163,7 @@ s32_t spiffs_obj_lu_find_free_obj_id(spiffs *fs, spiffs_obj_id *obj_id, const u8
       u32_t i, j;
       SPIFFS_DBG("free_obj_id: BITM min:"_SPIPRIid" max:"_SPIPRIid"\n", state.min_obj_id, state.max_obj_id);
 
-      __builtin_memset(fs->work, 0, SPIFFS_CFG_LOG_PAGE_SZ(fs));
+      memset(fs->work, 0, SPIFFS_CFG_LOG_PAGE_SZ(fs));
       res = spiffs_obj_lu_find_entry_visitor(fs, 0, 0, 0, 0, spiffs_obj_lu_find_free_obj_id_bitmap_v,
           conflicting_name, &state.min_obj_id, 0, 0);
       if (res == SPIFFS_VIS_END) res = SPIFFS_OK;
@@ -2232,7 +2228,7 @@ s32_t spiffs_obj_lu_find_free_obj_id(spiffs *fs, spiffs_obj_id *obj_id, const u8
       state.compaction = (state.max_obj_id-state.min_obj_id) / ((SPIFFS_CFG_LOG_PAGE_SZ(fs) / sizeof(u8_t)));
       SPIFFS_DBG("free_obj_id: COMP min:"_SPIPRIid" max:"_SPIPRIid" compact:"_SPIPRIi"\n", state.min_obj_id, state.max_obj_id, state.compaction);
 
-      __builtin_memset(fs->work, 0, SPIFFS_CFG_LOG_PAGE_SZ(fs));
+      memset(fs->work, 0, SPIFFS_CFG_LOG_PAGE_SZ(fs));
       res = spiffs_obj_lu_find_entry_visitor(fs, 0, 0, 0, 0, spiffs_obj_lu_find_free_obj_id_compact_v, &state, 0, 0, 0);
       if (res == SPIFFS_VIS_END) res = SPIFFS_OK;
       SPIFFS_CHECK_RES(res);

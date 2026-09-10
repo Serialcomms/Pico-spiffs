@@ -66,6 +66,14 @@ extern "C" {
 
 #define SPIFFS_ERR_TEST                 -10100
 
+// Add Pico SDK types
+typedef int32_t s32_t;
+typedef int16_t s16_t;
+typedef int8_t s8_t;
+
+typedef uint32_t u32_t;
+typedef uint16_t u16_t;
+typedef uint8_t u8_t;
 
 // spiffs file descriptor index type. must be signed
 typedef s16_t spiffs_file;

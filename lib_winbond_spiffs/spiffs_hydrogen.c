@@ -5,14 +5,10 @@
  *      Author: petera
  */
 
-// changed memset to __builtin_memset for Raspberry Pico SDK version
-// changed strcmp to __builtin_strcmp for Raspberry Pico SDK version
-// changed strlnen to __builtin_strlen for Raspberry Pico SDK version
-// changed strncpy to __builtin_strncpy for Raspberry Pico SDK version
-
-#include "pico/stdlib.h" 
 #include "spiffs.h"
 #include "spiffs_nucleus.h"
+
+#include "string.h"
 
 #if SPIFFS_CACHE == 1
 static s32_t spiffs_fflush_cache(spiffs *fs, spiffs_file fh);
@@ -93,13 +89,13 @@ s32_t SPIFFS_mount(spiffs *fs, spiffs_config *config, u8_t *work,
   void *user_data;
   SPIFFS_LOCK(fs);
   user_data = fs->user_data;
-  __builtin_memset(fs, 0, sizeof(spiffs));
+  memset(fs, 0, sizeof(spiffs));
   _SPIFFS_MEMCPY(&fs->cfg, config, sizeof(spiffs_config));
   fs->user_data = user_data;
   fs->block_count = SPIFFS_CFG_PHYS_SZ(fs) / SPIFFS_CFG_LOG_BLOCK_SZ(fs);
   fs->work = &work[0];
   fs->lu_work = &work[SPIFFS_CFG_LOG_PAGE_SZ(fs)];
-  __builtin_memset(fd_space, 0, fd_space_size);
+  memset(fd_space, 0, fd_space_size);
   // align fd_space pointer to pointer size byte boundary
   u8_t ptr_size = sizeof(void*);
   u8_t addr_lsb = ((u8_t)(intptr_t)fd_space) & (ptr_size-1);
@@ -196,7 +192,7 @@ s32_t SPIFFS_creat(spiffs *fs, const char *path, spiffs_mode mode) {
   (void)mode;
   SPIFFS_API_CHECK_CFG(fs);
   SPIFFS_API_CHECK_MOUNT(fs);
-  if (__builtin_strlen(path) > SPIFFS_OBJ_NAME_LEN - 1) {
+  if (strlen(path) > SPIFFS_OBJ_NAME_LEN - 1) {
     SPIFFS_API_CHECK_RES(fs, SPIFFS_ERR_NAME_TOO_LONG);
   }
   SPIFFS_LOCK(fs);
@@ -217,7 +213,7 @@ spiffs_file SPIFFS_open(spiffs *fs, const char *path, spiffs_flags flags, spiffs
   (void)mode;
   SPIFFS_API_CHECK_CFG(fs);
   SPIFFS_API_CHECK_MOUNT(fs);
-  if (__builtin_strlen(path) > SPIFFS_OBJ_NAME_LEN - 1) {
+  if (strlen(path) > SPIFFS_OBJ_NAME_LEN - 1) {
     SPIFFS_API_CHECK_RES(fs, SPIFFS_ERR_NAME_TOO_LONG);
   }
   SPIFFS_LOCK(fs);
@@ -662,7 +658,7 @@ s32_t SPIFFS_remove(spiffs *fs, const char *path) {
 #else
   SPIFFS_API_CHECK_CFG(fs);
   SPIFFS_API_CHECK_MOUNT(fs);
-  if (__builtin_strlen(path) > SPIFFS_OBJ_NAME_LEN - 1) {
+  if (strlen(path) > SPIFFS_OBJ_NAME_LEN - 1) {
     SPIFFS_API_CHECK_RES(fs, SPIFFS_ERR_NAME_TOO_LONG);
   }
   SPIFFS_LOCK(fs);
@@ -789,7 +785,7 @@ static s32_t spiffs_stat_pix(spiffs *fs, spiffs_page_ix pix, spiffs_file fh, spi
   s->type = objix_hdr.type;
   s->size = objix_hdr.size == SPIFFS_UNDEFINED_LEN ? 0 : objix_hdr.size;
   s->pix = pix;
-  __builtin_strncpy((char *)s->name, (char *)objix_hdr.name, SPIFFS_OBJ_NAME_LEN);
+  strncpy((char *)s->name, (char *)objix_hdr.name, SPIFFS_OBJ_NAME_LEN);
 #if SPIFFS_OBJ_META_LEN
   _SPIFFS_MEMCPY(s->meta, objix_hdr.meta, SPIFFS_OBJ_META_LEN);
 #endif
@@ -801,7 +797,7 @@ s32_t SPIFFS_stat(spiffs *fs, const char *path, spiffs_stat *s) {
   SPIFFS_API_DBG("%s '%s'\n", __func__, path);
   SPIFFS_API_CHECK_CFG(fs);
   SPIFFS_API_CHECK_MOUNT(fs);
-  if (__builtin_strlen(path) > SPIFFS_OBJ_NAME_LEN - 1) {
+  if (strlen(path) > SPIFFS_OBJ_NAME_LEN - 1) {
     SPIFFS_API_CHECK_RES(fs, SPIFFS_ERR_NAME_TOO_LONG);
   }
   SPIFFS_LOCK(fs);
@@ -925,8 +921,8 @@ s32_t SPIFFS_rename(spiffs *fs, const char *old_path, const char *new_path) {
 #else
   SPIFFS_API_CHECK_CFG(fs);
   SPIFFS_API_CHECK_MOUNT(fs);
-  if (__builtin_strlen(new_path) > SPIFFS_OBJ_NAME_LEN - 1 ||
-      __builtin_strlen(old_path) > SPIFFS_OBJ_NAME_LEN - 1) {
+  if (strlen(new_path) > SPIFFS_OBJ_NAME_LEN - 1 ||
+      strlen(old_path) > SPIFFS_OBJ_NAME_LEN - 1) {
     SPIFFS_API_CHECK_RES(fs, SPIFFS_ERR_NAME_TOO_LONG);
   }
   SPIFFS_LOCK(fs);
@@ -1089,7 +1085,7 @@ static s32_t spiffs_read_dir_v(
           (SPIFFS_PH_FLAG_DELET | SPIFFS_PH_FLAG_IXDELE)) {
     struct spiffs_dirent *e = (struct spiffs_dirent*)user_var_p;
     e->obj_id = obj_id;
-    __builtin_strncpy((char *)e->name, (char *)objix_hdr.name, sizeof(e->name) - 1);
+    strncpy((char *)e->name, (char *)objix_hdr.name, sizeof(e->name) - 1);
     e->name[sizeof(e->name) - 1] = '\0';
     e->type = objix_hdr.type;
     e->size = objix_hdr.size == SPIFFS_UNDEFINED_LEN ? 0 : objix_hdr.size;
@@ -1158,10 +1154,13 @@ s32_t SPIFFS_check(spiffs *fs) {
   SPIFFS_LOCK(fs);
 
   res = spiffs_lookup_consistency_check(fs, 0);
+  SPIFFS_API_CHECK_RES_UNLOCK(fs, res);
 
   res = spiffs_object_index_consistency_check(fs);
+  SPIFFS_API_CHECK_RES_UNLOCK(fs, res);
 
   res = spiffs_page_consistency_check(fs);
+  SPIFFS_API_CHECK_RES_UNLOCK(fs, res);
 
   res = spiffs_obj_lu_scan(fs);
 
@@ -1315,7 +1314,7 @@ s32_t SPIFFS_ix_map(spiffs *fs,  spiffs_file fh, spiffs_ix_map *map,
   // nb: spix range includes last
   map->start_spix = offset / SPIFFS_DATA_PAGE_SIZE(fs);
   map->end_spix = (offset + len) / SPIFFS_DATA_PAGE_SIZE(fs);
-  __builtin_memset(map_buf, 0, sizeof(spiffs_page_ix) * (map->end_spix - map->start_spix + 1));
+  memset(map_buf, 0, sizeof(spiffs_page_ix) * (map->end_spix - map->start_spix + 1));
   fd->ix_map = map;
 
   // scan for pixes
@@ -1380,7 +1379,7 @@ s32_t SPIFFS_ix_remap(spiffs *fs, spiffs_file fh, u32_t offset) {
     map->end_spix += spix_diff;
     if (spix_diff >= vec_len) {
       // moving beyond range
-      __builtin_memset(&map->map_buf, 0, vec_len * sizeof(spiffs_page_ix));
+      memset(&map->map_buf, 0, vec_len * sizeof(spiffs_page_ix));
       // populate_ix_map is inclusive
       res = spiffs_populate_ix_map(fs, fd, 0, vec_len-1);
       SPIFFS_API_CHECK_RES_UNLOCK(fs, res);
@@ -1390,7 +1389,7 @@ s32_t SPIFFS_ix_remap(spiffs *fs, spiffs_file fh, u32_t offset) {
         map->map_buf[i] = map->map_buf[i + spix_diff];
       }
       // memset is non-inclusive
-      __builtin_memset(&map->map_buf[vec_len - spix_diff], 0, spix_diff * sizeof(spiffs_page_ix));
+      memset(&map->map_buf[vec_len - spix_diff], 0, spix_diff * sizeof(spiffs_page_ix));
       // populate_ix_map is inclusive
       res = spiffs_populate_ix_map(fs, fd, vec_len - spix_diff, vec_len-1);
       SPIFFS_API_CHECK_RES_UNLOCK(fs, res);
@@ -1400,7 +1399,7 @@ s32_t SPIFFS_ix_remap(spiffs *fs, spiffs_file fh, u32_t offset) {
         map->map_buf[i] = map->map_buf[i + spix_diff];
       }
       // memset is non-inclusive
-      __builtin_memset(&map->map_buf[0], 0, -spix_diff * sizeof(spiffs_page_ix));
+      memset(&map->map_buf[0], 0, -spix_diff * sizeof(spiffs_page_ix));
       // populate_ix_map is inclusive
       res = spiffs_populate_ix_map(fs, fd, 0, -spix_diff - 1);
       SPIFFS_API_CHECK_RES_UNLOCK(fs, res);
